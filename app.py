@@ -145,11 +145,13 @@ def entry_detail(entry_id):
     tags = models.Tags.select().where(
         models.Tags.entry_id == entry_id
     )
-
-    if entry.user_id != current_user.user_id:
-        access = False
+    if current_user.is_authenticated:
+        if entry.user_id != current_user.user_id:
+            access = False
+        else:
+            access = True
     else:
-        access = True
+        access = False
 
     return render_template("detail.html", entry=entry, 
                             resources=resources, access=access, 
@@ -281,4 +283,3 @@ if __name__ == '__main__':
                     entry = entry.id)
     
     app.run(debug=DEBUG, host=HOST, port=PORT)
-    
