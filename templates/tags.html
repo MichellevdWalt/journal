@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
+        <h1 style="text-align:center; font-size:20px">Entries with the tag: "{{tag}}"</h1>
         <section>
             <div class="container">
                 {% for entry in tagged_entries %}

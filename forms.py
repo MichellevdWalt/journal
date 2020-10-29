@@ -6,11 +6,13 @@ from email_validator import validate_email, EmailNotValidError
 from models import User
 
 def name_exists(form, field):
+    """Checks if username exists in db"""
     if User.select().where(User.username == field.data).exists():
         raise ValidationError('User with that name already exists.')
 
 
 class NewEntryForm(Form):
+    """Form to create new journal entry"""
     title = StringField(
         'Title',
         validators=[
@@ -21,7 +23,8 @@ class NewEntryForm(Form):
         validators=[
             DataRequired(),
             Regexp(
-                r'(([1-2][0-9])|(0[1-9])|([1-9])|(3[0-1]))/((1[0-2])|(0[1-9])|([1-9]))/[0-9]{4}',
+                (r'(([1-2][0-9])|(0[1-9])|([1-9])|(3[0-1]))/'
+                  '((1[0-2])|(0[1-9])|([1-9]))/[0-9]{4}'),
                 message=("Please format your date dd/mm/yyyy.")
             ),
         ]
@@ -47,6 +50,7 @@ class NewEntryForm(Form):
 
 
 class RegisterForm(Form):
+    """Form to register a new user"""
     username = StringField(
         'Username',
         validators=[
@@ -70,10 +74,13 @@ class RegisterForm(Form):
         validators=[DataRequired()]
     )
 
+
 class LoginForm(Form):
+    """Form to log in a user"""
     username = StringField(
         'Username', 
         validators=[
             DataRequired(),
             ])
     password = PasswordField('Password', validators=[DataRequired()])
+    

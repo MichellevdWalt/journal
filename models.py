@@ -47,7 +47,13 @@ class Journal(Model):
         order_by = ('-date',)
 
     @classmethod
-    def create_journal_entry(cls, title, time_spent, learnt, resources, user, tags_str=None):
+    def create_journal_entry(cls, 
+                             title, 
+                             time_spent, 
+                             learnt, 
+                             resources, 
+                             user, 
+                             tags_str=None):
         try:
             with DATABASE.transaction():
                 cls.create(
@@ -81,11 +87,11 @@ class Relationship(Model):
         database = DATABASE
         indexes = (
             (('from_user', 'to_user'), True),
-        )
-            
+        )  
             
 
 def initialize():
     DATABASE.connect()
-    DATABASE.create_tables([User, Journal, Relationship, Tags], safe=True)
+    DATABASE.create_tables(
+        [User, Journal, Relationship, Tags], safe=True)
     DATABASE.close()
