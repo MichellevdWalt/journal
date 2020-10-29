@@ -7,6 +7,8 @@ To run this program:
     Runs on localhost:8000
     Please see requirements.txt for required packages.
 
+NOTE: For testing I suggest registering a new user to get a feel for the full functionality, or you could log in with the mock-user: username = Michelle, Password = password. (This can be changed in app.py line 257 BEFORE first run, alternatively delete your instance of journal.db before re-running with new user in app.py line 257.)
+
 This learning journal lets you register as a user and then add entries to the journal.
 
 The program renders a registration or new entry form and then creates the necessary fields in the sqlite db.
