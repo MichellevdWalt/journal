@@ -33,7 +33,7 @@
                             <h3>Tags:</h3>
                             <ul>
                                 {% for tag in tags %}
-                                <li style="display: inline-block"><a href="">{{ tag }}</a></li>
+                                <li style="display: inline-block"><a href="{{ url_for('entry_tags', tag=tag.tag)}}">{{ tag.tag }}</a></li>
                                 {% endfor %}
                             </ul>
                         </div>

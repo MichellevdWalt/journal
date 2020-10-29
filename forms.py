@@ -21,7 +21,7 @@ class NewEntryForm(Form):
         validators=[
             DataRequired(),
             Regexp(
-                r'(([1-2][0-9])|([1-9])|(3[0-1]))/((1[0-2])|([1-9]))/[0-9]{4}',
+                r'(([1-2][0-9])|(0[1-9])|([1-9])|(3[0-1]))/((1[0-2])|(0[1-9])|([1-9]))/[0-9]{4}',
                 message=("Please format your date dd/mm/yyyy.")
             ),
         ]

@@ -130,7 +130,9 @@ def entry_detail(entry_id):
     else:
         resources = entry.resources.split(",")
 
-    tags = entry.tags_str.split(",")
+    tags = models.Tags.select().where(
+        models.Tags.entry_id == entry_id
+    )
 
     if entry.user_id != current_user.user_id:
         access = False
@@ -208,12 +210,16 @@ def entry_delete(entry_id):
 
 @app.route('/entries/<tag>')
 def entry_tags(tag):
-    entry_ids = []
-    tags = models.Tag.select().where(
-        tag=tag
+    tags = models.Tags.select()
+    tagged_entries = models.Journal.select().join(models.Tags).where(
+        models.Tags.tag == tag
     )
-    for tag in tags:
-        entry_ids += tag.entry_id
+    if tagged_entries.count() == 0:
+        abort(404)
+    else:
+        return render_template('tags.html', tagged_entries=tagged_entries, tags=tags)
+
+
 
     
 
@@ -239,7 +245,7 @@ if __name__ == '__main__':
             tags_str = "welcome, entry"
         )
             entry = models.Journal.get(models.Journal.title == "Welcome")
-            tag_list = entry.tags_str.split(",")
+            tag_list = entry.tags_str.split(", ")
             for tag in tag_list:
                 models.Tags.create(
                     tag = tag,
