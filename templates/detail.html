@@ -19,16 +19,32 @@
                             <h3>Resources to Remember:</h3>
                             <ul>
                                 {% for item in resources %}
-                                <li><a href="">{{ item }}</a></li>
+                                    {% if "https:" in item %}
+                                        <li><a href="{{ item }}" target="_blank"">{{ item }}</a></li>
+                                    {% elif "www" in item %}
+                                        <li><a href="https://{{ item }}" target="_blank"">{{ item }}</a></li>
+                                    {%else%}
+                                        <li>{{ item }}</li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="entry">
+                            <h3>Tags:</h3>
+                            <ul>
+                                {% for tag in tags %}
+                                <li style="display: inline-block"><a href="">{{ tag }}</a></li>
                                 {% endfor %}
                             </ul>
                         </div>
                     </article>
                 </div>
             </div>
-            <div class="edit">
-                <p><a href="{{url_for('entry_edit', entry_id = entry.id)}}">Edit Entry</a></p>
-                <p><a href="{{url_for('entry_confirm_delete', entry_id = entry.id)}}">Delete Entry</a></p>
-            </div>
+            {%if access%}
+                <div class="edit">
+                    <p><a href="{{url_for('entry_edit', entry_id = entry.id)}}">Edit Entry</a></p>
+                    <p><a href="{{url_for('entry_confirm_delete', entry_id = entry.id)}}">Delete Entry</a></p>
+                </div>
+            {%endif%}
         </section>
 {% endblock %}

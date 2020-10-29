@@ -41,6 +41,9 @@ class NewEntryForm(Form):
         validators=[
             DataRequired(),
         ])
+    tags = StringField(
+        'Tags'
+    )
 
 
 class RegisterForm(Form):

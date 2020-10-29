@@ -86,25 +86,32 @@ def index():
     return redirect(url_for('entries'))
 
 @app.route('/entries', methods=('GET', 'POST'))
-@login_required
 def entries():
-    journal_entries = models.Journal.select().where(
-        models.Journal.user_id == current_user.user_id 
-    ).limit(100)
-    return render_template('index.html', journal_entries = journal_entries)
+    journal_entries = models.Journal.select().limit(100)
+    tags = models.Tags.select()
+    print(tags)
+    return render_template('index.html', journal_entries = journal_entries, tags = tags)
 
 @app.route('/entries/new', methods=('GET', 'POST'))
+@login_required
 def new_entry():
     form = forms.NewEntryForm()
     if form.validate_on_submit():
-        models.Journal.create(
+        entry = models.Journal.create(
             title = form.title.data,
             date = datetime.datetime.strptime(form.date.data, '%d/%m/%Y'),
             time_spent = form.time_spent.data,
             learnt = form.learnt.data.strip(),
             resources = form.resources.data.strip(),
-            user_id = current_user.user_id
+            user_id = current_user.user_id,
+            tags_str = form.tags.data
         )
+        tag_list = form.tags.data.split(", ")
+        for tag in tag_list:
+            models.Tags.create(
+                tag = tag,
+                entry = entry
+            )
         flash("Entry added.", "success")
         return redirect(url_for('entries'))
     return render_template('new.html', form=form)
@@ -117,20 +124,24 @@ def entry_detail(entry_id):
             ).get()
     except models.DoesNotExist:
         abort(404)
-
-    if entry.user_id != current_user.user_id:
-        abort(401)
-    
     
     if "\n" in entry.resources:
         resources = entry.resources.split("\n") 
     else:
         resources = entry.resources.split(",")
 
-    return render_template("detail.html", entry=entry, resources=resources)
+    tags = entry.tags_str.split(",")
+
+    if entry.user_id != current_user.user_id:
+        access = False
+    else:
+        access = True
+
+    return render_template("detail.html", entry=entry, resources=resources, access=access, tags=tags)
     
 
 @app.route('/entries/<int:entry_id>/edit', methods=('GET', 'POST'))
+@login_required
 def entry_edit(entry_id):
     try:
         entry = models.Journal.select().where(
@@ -141,28 +152,53 @@ def entry_edit(entry_id):
 
     if entry.user_id != current_user.user_id:
         abort(401)
-        
-    form = forms.NewEntryForm(title = entry.title, date= datetime.datetime.strftime(entry.date, '%d/%m/%Y'), time_spent = entry.time_spent, learnt = entry.learnt, resources = entry.resources)
+
+    form = forms.NewEntryForm(title = entry.title, date= datetime.datetime.strftime(entry.date, '%d/%m/%Y'), time_spent = entry.time_spent, learnt = entry.learnt, resources = entry.resources, tags = entry.tags_str)
     if form.validate_on_submit():
         journal_update = models.Journal.update(
             title = form.title.data,
             date = datetime.datetime.strptime(form.date.data, '%d/%m/%Y'),
             time_spent = form.time_spent.data,
             learnt = form.learnt.data.strip(),
-            resources = form.resources.data.strip()
+            resources = form.resources.data.strip(),
+            tags_str = form.tags.data
         ).where(models.Journal.id == entry_id)
         journal_update.execute()
+
+        tags_delete = models.Tags.delete().where(
+            models.Tags.entry_id == entry_id
+        )
+        tags_delete.execute()
+        entry_updated = models.Journal.select().where(
+            models.Journal.id == entry_id
+        ).get()
+
+        tags_list = entry_updated.tags_str.split(", ")
+        for tag in tags_list:
+            models.Tags.create(
+                tag = tag,
+                entry = entry_id
+            )
         flash("Entry updated.", "success")
-        return redirect(url_for('entries'))
+        return redirect(url_for('entry_detail', entry_id=entry_id))
     return render_template('edit.html', entry=entry, form = form)
 
 
 @app.route('/entries/<int:entry_id>/confirm_delete', methods=('GET', 'POST'))
+@login_required
 def entry_confirm_delete(entry_id):
-    entry = models.Journal.select().where(models.Journal.id == entry_id).get()
+    try:
+        entry = models.Journal.select().where(models.Journal.id == entry_id).get()
+    except models.DoesNotExist:
+        abort(404)
+
+    if entry.user_id != current_user.user_id:
+        abort(401)
+
     return render_template('delete.html', entry=entry)
 
 @app.route('/entries/<int:entry_id>/delete', methods=('GET', 'POST'))
+@login_required
 def entry_delete(entry_id):
     entry = models.Journal.select().where(models.Journal.id == entry_id).get()
     delete_final = models.Journal.delete().where(models.Journal.id == entry_id)
@@ -170,6 +206,16 @@ def entry_delete(entry_id):
     flash("Entry Deleted", "success")
     return redirect(url_for('entries'))
 
+@app.route('/entries/<tag>')
+def entry_tags(tag):
+    entry_ids = []
+    tags = models.Tag.select().where(
+        tag=tag
+    )
+    for tag in tags:
+        entry_ids += tag.entry_id
+
+    
 
 if __name__ == '__main__':
     models.initialize()
@@ -184,12 +230,20 @@ if __name__ == '__main__':
     try:
         models.Journal.get(models.Journal.title == "Welcome")
     except models.DoesNotExist:
-        models.Journal.create_journal_entry(
+            models.Journal.create_journal_entry(
             title ='Welcome',
             time_spent = 'Add the time you spent here in',
             learnt ='Add everything you learnt here',
-            resources= 'Add all your resources here\nSeparated by a comma or\nline break',
-            user = '1'
+            resources= 'Add all your resources\nand/or websites here\nSeparated by a comma or\nline break',
+            user = '1',
+            tags_str = "welcome, entry"
         )
+            entry = models.Journal.get(models.Journal.title == "Welcome")
+            tag_list = entry.tags_str.split(",")
+            for tag in tag_list:
+                models.Tags.create(
+                    tag = tag,
+                    entry = entry.id
+                )
     
     app.run(debug=DEBUG, host=HOST, port=PORT)

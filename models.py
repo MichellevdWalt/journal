@@ -40,13 +40,14 @@ class Journal(Model):
         User,
         backref='entries'
     )
+    tags_str = CharField()
     
     class Meta:
         database = DATABASE
         order_by = ('-date',)
 
     @classmethod
-    def create_journal_entry(cls, title, time_spent, learnt, resources, user):
+    def create_journal_entry(cls, title, time_spent, learnt, resources, user, tags_str=None):
         try:
             with DATABASE.transaction():
                 cls.create(
@@ -54,17 +55,18 @@ class Journal(Model):
                     time_spent=time_spent,
                     learnt=learnt,
                     resources=resources,
-                    user=user)
+                    user=user,
+                    tags_str=tags_str)
         except:
             pass
             
 
 class Tags(Model):
-    user = ForeignKeyField(
-        User,
+    entry = ForeignKeyField(
+        Journal,
         backref='tags'
     )
-    tags = TextField()
+    tag = TextField()
     
     class Meta:
         database = DATABASE

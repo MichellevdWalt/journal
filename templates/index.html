@@ -6,8 +6,16 @@
                 {% for entry in journal_entries %}
                     <div class="entry-list">
                         <article>
-                            <h2><a href="{{ url_for('entry_detail', entry_id = entry.id) }}">{{entry.title}}</a></h2>
+                            <h2><a href="{{ url_for('entry_detail', entry_id = entry.id) }}">{{ entry.title }}</a></h2>
                             <time datetime="{{ entry.date.strftime('%Y-%m-%d') }}">{{ entry.date.strftime('%d-%m-%Y') }}</time>
+                            <ul style="padding: 0px">
+                                <li style="display: inline-block; font-size: 10px">Tags: </li>
+                            {% for tag in tags %}
+                                {% if tag.entry_id == entry.id %}
+                                    <li style="display: inline-block; font-size: 10px"><a href="{{url_for('entry_tags', tag = tag.tag)}}">{{ tag.tag }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
                         </article>
                         
                     </div>
