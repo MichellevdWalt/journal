@@ -138,7 +138,7 @@ def entry_detail(entry_id):
         abort(404)
     
     if "\n" in entry.resources:
-        resources = entry.resources.split("\n") 
+        resources = entry.resources.split("\n")
     else:
         resources = entry.resources.split(",")
 

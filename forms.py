@@ -40,7 +40,7 @@ class NewEntryForm(Form):
             DataRequired(),
         ])
     resources = TextAreaField(
-        'Recources to Remember',
+        'Recources to Remember, please use enter or ", " between items',
         validators=[
             DataRequired(),
         ])
